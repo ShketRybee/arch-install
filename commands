@@ -1,0 +1,120 @@
+#archfi, di
+  pacman -S wget
+  wget matmoul.github.io/archfi       wget matmoul.github.io/archdi
+  sh archfi                           sh archdi 
+  
+ #time
+  timedatectl set-ntp true
+  timedatectl set-timezone Europe/Moscow 
+  
+ #partition, format, mount
+  cfdisk
+  mfks.btrfs /dev/root_partition    
+  mkfs.btrfs /dev/home_partition 
+  mkfs.vfat /dev/boot_partition
+  mkswap /dev/swap_partition
+  mount /dev/root_partition /mnt
+  mount /dev/home_partition /mnt/home
+  swapon /dev/swap_partition
+ 
+ #linux
+  pacstrap /mnt base base-devel linux-zen linux-firmware dhcpcd
+  
+ #fstab
+  genfstab -U /mnt >> /mnt/etc/fstab
+
+// chroot
+  arch-chroot /mnt
+
+ #timezone_sys
+  timedatectl set-ntp true
+  ln -sf /usr/share/zoneinfo/Europe/Moscow /etc/localtime
+  hwclock --systohc
+  
+ #locale
+  setfont cyr-sun16
+  vim /etc/locale.gen # uncomment the needed lines like: de_DE.UTF-8 or en_US.UTF-8
+  locale-gen
+  echo "LANG=ru_RU.UTF-8" > /etc/locale.conf
+  echo "LANG=en_US.UTF-8" > /etc/locale.conf
+  
+ #hostname
+  vim /etc/hostname   #nautilus
+  
+ #hosts
+  vim /etc/hosts
+  127.0.0.1    localhost
+  ::1        localhost
+  127.0.1.1    nautilus.localdomain nautilus
+  
+ #network
+  pacman -S networkmanager
+  systemctl enable networkmanager
+  systemctl start networkmanager
+  systemctl enable dhcpcd.service
+  systemctl start dhcpcd.service
+  
+ #passwd for root
+  passwd ****
+  
+ #grub
+  pacman -S grub efibootmgr os-prober
+  mount /dev/boot_partition /boot/efi
+  grub-install
+  grub-mkconfig -o /boot/grub/grub.cfg
+  vim /etc/default/grub  #GRUB_CMDLINE_LINUX="iommu=soft"
+  update-grub
+  
+
+  exit
+  reboot  
+  
+// post-installation
+
+ #user
+  useradd -mG wheel username
+  vim /etc/sudoers           #uncomment %wheel ALL=(ALL) ALL
+
+   /yay
+  pacman -S --needed git
+  git clone https://aur.archlinux.org/yay.git
+  cd yay
+  makepkg -si 
+   /multilib
+  vim /etc/pacman.conf
+  #uncomment   [multilib]
+               Include = /etc/pacman.d/mirrorlist 
+ 
+ #x.org; pulse
+  pacman -S xorg-server xorg-xinit pulseaudio pulseaudio-alsa
+  pacman -S xf86-video-amdgpu xf86-input-libinput xf86-input-evdev
+
+ #kde
+  pacman -S plasma-desktop sddm sddm-kcm plasma-nm konsole yakuake xdg-user-dirs
+  systemctl enable sddm
+  systemctl start sddm
+
+ #optimizations
+   /if you use ssd+more than 8gb ram
+  systemctl enable fstrim.timer 
+  echo -e "vm.dirty_background_ratio = 50" | sudo tee -a /etc/sysctl.conf
+  echo -e "vm.dirty_ratio = 80" | sudo tee -a /etc/sysctl.conf
+  echo -e "vm.vfs_cache_pressure=50" | sudo tee -a /etc/sysctl.conf
+  echo -e "vm.swappiness=1" | sudo tee -a /etc/sysctl.conf
+   /grub-cfg
+  vim /etc/default/grub
+  GRUB_CMDLINE_LINUX_DEFAULT="your_parameters amdgpu.ppfeaturemask=0xffffffff radeon.cik_support=0 amdgpu.cik_support=1"    #AMD videocard overclocking (yay -S corectrl)
+  grub-mkconfig -o /boot/grub/grub.cfg
+
+ #tearing_amd
+  nano /etc/X11/xorg.conf.d/20-amdgpu.conf
+    Section "Device"
+     Identifier "AMD"
+     Driver "amdgpu"
+     Option "TearFree" "true"
+           Option "DRI" "3"
+    EndSection
+    # test - https://youtu.be/5xkNy9gfKOg
+  
+ #ttl
+  echo "net.ipv4.ip_default_ttl=65" | sudo tee -a /etc/sysctl.conf
