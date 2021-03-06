@@ -1,9 +1,4 @@
-#archfi, di
-  pacman -S wget
-  wget matmoul.github.io/archfi       wget matmoul.github.io/archdi
-  sh archfi                           sh archdi 
-  
- #time
+#time
   timedatectl set-ntp true
   timedatectl set-timezone Europe/Moscow 
   
