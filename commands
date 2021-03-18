@@ -44,10 +44,8 @@
   
  #network
   pacman -S networkmanager
-  systemctl enable networkmanager
-  systemctl start networkmanager
-  systemctl enable dhcpcd.service
-  systemctl start dhcpcd.service
+  systemctl enable --now networkmanager
+  systemctl enable --now dhcpcd
   
  #passwd for root
   passwd ****
@@ -86,8 +84,7 @@
 
  #kde
   pacman -S plasma-desktop sddm sddm-kcm plasma-nm konsole yakuake xdg-user-dirs
-  systemctl enable sddm
-  systemctl start sddm
+  systemctl enable --now sddm
 
  #optimizations
    /if you use ssd+more than 8gb ram
@@ -98,11 +95,11 @@
   echo -e "vm.swappiness=1" | sudo tee -a /etc/sysctl.conf
    /grub-cfg
   vim /etc/default/grub
-  GRUB_CMDLINE_LINUX_DEFAULT="your_parameters amdgpu.ppfeaturemask=0xffffffff radeon.cik_support=0 amdgpu.cik_support=1"    #AMD videocard overclocking (yay -S corectrl)
+  GRUB_CMDLINE_LINUX_DEFAULT="your_parameters amdgpu.ppfeaturemask=0xffffffff radeon.cik_support=0 amdgpu.cik_support=1"
   grub-mkconfig -o /boot/grub/grub.cfg
 
  #tearing_amd
-  nano /etc/X11/xorg.conf.d/20-amdgpu.conf
+  vim /etc/X11/xorg.conf.d/20-amdgpu.conf
     Section "Device"
      Identifier "AMD"
      Driver "amdgpu"
