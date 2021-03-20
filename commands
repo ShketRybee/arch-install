@@ -1,6 +1,7 @@
 #time
   timedatectl set-ntp true
-  timedatectl set-timezone Europe/Moscow 
+  timedatectl set-timezone Europe/Moscow
+  hwclock --systohc
   
  #partition, format, mount
   cfdisk
@@ -20,17 +21,10 @@
 
 // chroot
   arch-chroot /mnt
-
- #timezone_sys
-  timedatectl set-ntp true
-  ln -sf /usr/share/zoneinfo/Europe/Moscow /etc/localtime
-  hwclock --systohc
   
  #locale
-  setfont cyr-sun16
-  vim /etc/locale.gen # uncomment the needed lines like: de_DE.UTF-8 or en_US.UTF-8
+  vim /etc/locale.gen # uncomment en_US.UTF-8
   locale-gen
-  echo "LANG=ru_RU.UTF-8" > /etc/locale.conf
   echo "LANG=en_US.UTF-8" > /etc/locale.conf
   
  #hostname
